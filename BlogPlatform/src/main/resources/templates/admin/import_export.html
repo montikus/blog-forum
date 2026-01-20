@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="fragments/layout :: uklad(~{::title}, ~{::section})">
+<head>
+	<title>Import i eksport</title>
+</head>
+<section>
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<h1 class="mb-0">Import i eksport</h1>
+		<a class="btn btn-outline-secondary" th:href="@{/admin}">Powrot</a>
+	</div>
+
+	<div class="row g-4">
+		<div class="col-md-6">
+			<h4>Import uzytkownikow</h4>
+			<form th:action="@{/admin/import/users}" method="post" enctype="multipart/form-data">
+				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+				<input class="form-control mb-2" type="file" name="plik" accept=".csv" required>
+				<button class="btn btn-primary" type="submit">Importuj</button>
+			</form>
+			<div class="alert alert-info mt-2" th:if="${wynikImportuUzytkownikow != null}">
+				<p class="mb-1" th:text="'Zaimportowano: ' + ${wynikImportuUzytkownikow.liczbaZaimportowanych}"></p>
+				<p class="mb-1" th:text="'Pominieto: ' + ${wynikImportuUzytkownikow.liczbaPominietych}"></p>
+				<ul class="mb-0" th:if="${!#lists.isEmpty(wynikImportuUzytkownikow.bledy)}">
+					<li th:each="blad : ${wynikImportuUzytkownikow.bledy}" th:text="${blad}"></li>
+				</ul>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<h4>Import postow</h4>
+			<form th:action="@{/admin/import/posts}" method="post" enctype="multipart/form-data">
+				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+				<input class="form-control mb-2" type="file" name="plik" accept=".csv" required>
+				<button class="btn btn-primary" type="submit">Importuj</button>
+			</form>
+			<div class="alert alert-info mt-2" th:if="${wynikImportuPostow != null}">
+				<p class="mb-1" th:text="'Zaimportowano: ' + ${wynikImportuPostow.liczbaZaimportowanych}"></p>
+				<p class="mb-1" th:text="'Pominieto: ' + ${wynikImportuPostow.liczbaPominietych}"></p>
+				<ul class="mb-0" th:if="${!#lists.isEmpty(wynikImportuPostow.bledy)}">
+					<li th:each="blad : ${wynikImportuPostow.bledy}" th:text="${blad}"></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<hr class="my-4">
+	<h4>Eksport</h4>
+	<div class="d-flex gap-2 flex-wrap">
+		<a class="btn btn-outline-primary" th:href="@{/api/v1/admin/export/posts/csv}">Eksport CSV</a>
+		<a class="btn btn-outline-primary" th:href="@{/api/v1/admin/export/posts/pdf}">Eksport PDF</a>
+	</div>
+</section>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="fragments/layout :: uklad(~{::title}, ~{::section})">
+<head>
+	<title th:text="${trybEdycji} ? 'Edycja posta' : 'Nowy post'">Post</title>
+</head>
+<section>
+	<h1 th:text="${trybEdycji} ? 'Edycja posta' : 'Nowy post'">Post</h1>
+	<form th:object="${formularz}"
+		  th:action="${trybEdycji} ? @{/posts/{idPosta}/edit(idPosta=${idPosta})} : @{/posts}"
+		  method="post">
+		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+		<div class="mb-3">
+			<label class="form-label" for="tytul">Tytul</label>
+			<input class="form-control" id="tytul" type="text" th:field="*{tytul}" required>
+			<div class="text-danger" th:errors="*{tytul}"></div>
+		</div>
+		<div class="mb-3">
+			<label class="form-label" for="tresc">Tresc (HTML)</label>
+			<textarea class="form-control" id="tresc" rows="8" th:field="*{tresc}" required></textarea>
+			<div class="text-danger" th:errors="*{tresc}"></div>
+		</div>
+		<div class="mb-3">
+			<label class="form-label" for="wspolautorzyId">Wspolautorzy</label>
+			<select class="form-select" id="wspolautorzyId" multiple th:field="*{wspolautorzyId}">
+				<option th:each="uzytkownik : ${uzytkownicy}"
+						th:value="${uzytkownik.id}"
+						th:text="${uzytkownik.nazwaUzytkownika}">
+				</option>
+			</select>
+			<div class="form-text">Aktualny uzytkownik zostanie zawsze dodany.</div>
+		</div>
+		<button class="btn btn-primary" type="submit" th:text="${trybEdycji} ? 'Zapisz' : 'Utworz'">Zapisz</button>
+		<a class="btn btn-outline-secondary" th:href="@{/dashboard}">Anuluj</a>
+	</form>
+</section>
+</html>

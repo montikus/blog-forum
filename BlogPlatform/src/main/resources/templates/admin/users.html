@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="fragments/layout :: uklad(~{::title}, ~{::section})">
+<head>
+	<title>Uzytkownicy</title>
+</head>
+<section>
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<h1 class="mb-0">Uzytkownicy</h1>
+		<a class="btn btn-outline-secondary" th:href="@{/admin}">Powrot</a>
+	</div>
+	<table class="table table-striped bg-white shadow-sm">
+		<thead>
+		<tr>
+			<th>Nazwa</th>
+			<th>Email</th>
+			<th>Rola</th>
+			<th></th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr th:each="uzytkownik : ${uzytkownicy}">
+			<td th:text="${uzytkownik.nazwaUzytkownika}">Nazwa</td>
+			<td th:text="${uzytkownik.adresEmail}">Email</td>
+			<td th:text="${uzytkownik.rola}">Rola</td>
+			<td class="text-end">
+				<form th:action="@{/admin/users/{idUzytkownika}/delete(idUzytkownika=${uzytkownik.id})}" method="post">
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+					<button class="btn btn-sm btn-outline-danger" type="submit">Usun</button>
+				</form>
+			</td>
+		</tr>
+		<tr th:if="${#lists.isEmpty(uzytkownicy)}">
+			<td colspan="4" class="text-muted">Brak uzytkownikow.</td>
+		</tr>
+		</tbody>
+	</table>
+</section>
+</html>

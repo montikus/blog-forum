@@ -1,0 +1,63 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700&family=Space+Grotesk:wght@400;600&display=swap");
+
+:root {
+	--kolor-tla: #f6f0e6;
+	--kolor-akcent: #c46a2c;
+	--kolor-ciemny: #1f2a2e;
+	--kolor-jasny: #ffffff;
+	--kolor-wyciszenie: #5a6a72;
+	--font-tytul: "Fraunces", serif;
+	--font-tekst: "Space Grotesk", sans-serif;
+}
+
+body {
+	font-family: var(--font-tekst);
+	color: var(--kolor-ciemny);
+	background:
+		radial-gradient(circle at 10% 20%, rgba(196, 106, 44, 0.08), transparent 45%),
+		radial-gradient(circle at 90% 0%, rgba(31, 42, 46, 0.08), transparent 40%),
+		var(--kolor-tla);
+}
+
+h1, h2, h3, h4, h5 {
+	font-family: var(--font-tytul);
+	letter-spacing: 0.3px;
+}
+
+.navbar-brand {
+	font-family: var(--font-tytul);
+	font-weight: 700;
+}
+
+.btn-primary {
+	background-color: var(--kolor-akcent);
+	border-color: var(--kolor-akcent);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+	background-color: #b15d24;
+	border-color: #b15d24;
+}
+
+.card, .list-group-item, .table {
+	border: none;
+	border-radius: 12px;
+}
+
+.table {
+	overflow: hidden;
+}
+
+.page-link {
+	color: var(--kolor-ciemny);
+}
+
+.page-item.active .page-link {
+	background-color: var(--kolor-ciemny);
+	border-color: var(--kolor-ciemny);
+}
+
+footer {
+	background: rgba(255, 255, 255, 0.7);
+}

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="fragments/layout :: uklad(~{::title}, ~{::section})">
+<head>
+	<title>Nowa wiadomosc</title>
+</head>
+<section>
+	<h1>Nowa wiadomosc</h1>
+	<form th:action="@{/messages/send}" th:object="${formularz}" method="post">
+		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+		<input type="hidden" th:field="*{idPosta}">
+		<div class="mb-3">
+			<label for="nazwaOdbiorcy" class="form-label">Odbiorca</label>
+			<input id="nazwaOdbiorcy" class="form-control" type="text" th:field="*{nazwaOdbiorcy}" required>
+			<div class="text-danger" th:errors="*{nazwaOdbiorcy}"></div>
+		</div>
+		<div class="mb-3">
+			<label for="tresc" class="form-label">Tresc</label>
+			<textarea id="tresc" class="form-control" rows="5" th:field="*{tresc}" required></textarea>
+			<div class="text-danger" th:errors="*{tresc}"></div>
+		</div>
+		<button class="btn btn-primary" type="submit">Wyslij</button>
+		<a class="btn btn-outline-secondary" th:href="@{/messages/inbox}">Anuluj</a>
+	</form>
+</section>
+</html>

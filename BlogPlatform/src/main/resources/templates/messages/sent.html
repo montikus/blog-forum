@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="fragments/layout :: uklad(~{::title}, ~{::section})">
+<head>
+	<title>Wyslane</title>
+</head>
+<section>
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<h1 class="mb-0">Wyslane</h1>
+		<a class="btn btn-primary" th:href="@{/messages/compose}">Nowa wiadomosc</a>
+	</div>
+
+	<div class="list-group shadow-sm">
+		<div class="list-group-item" th:each="wiadomosc : ${stronaWiadomosci.content}">
+			<div class="d-flex justify-content-between">
+				<strong th:text="${wiadomosc.odbiorca.nazwaUzytkownika}">Odbiorca</strong>
+				<small class="text-muted" th:text="${#temporals.format(wiadomosc.wyslanoDnia, 'yyyy-MM-dd HH:mm')}">
+					Data
+				</small>
+			</div>
+			<p class="mb-0" th:text="${wiadomosc.tresc}">Tresc</p>
+		</div>
+		<div class="list-group-item text-muted" th:if="${#lists.isEmpty(stronaWiadomosci.content)}">
+			Brak wiadomosci.
+		</div>
+	</div>
+
+	<nav class="mt-4" th:if="${stronaWiadomosci.totalPages > 1}">
+		<ul class="pagination">
+			<li class="page-item" th:classappend="${stronaWiadomosci.first} ? 'disabled'">
+				<a class="page-link" th:href="@{/messages/sent(page=${stronaWiadomosci.number - 1})}">Poprzednia</a>
+			</li>
+			<li class="page-item"
+				th:each="nr : ${#numbers.sequence(0, stronaWiadomosci.totalPages - 1)}"
+				th:classappend="${nr == stronaWiadomosci.number} ? 'active'">
+				<a class="page-link" th:href="@{/messages/sent(page=${nr})}" th:text="${nr + 1}">1</a>
+			</li>
+			<li class="page-item" th:classappend="${stronaWiadomosci.last} ? 'disabled'">
+				<a class="page-link" th:href="@{/messages/sent(page=${stronaWiadomosci.number + 1})}">Nastepna</a>
+			</li>
+		</ul>
+	</nav>
+</section>
+</html>
