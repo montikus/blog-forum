@@ -2,28 +2,15 @@ spring:
   application:
     name: blog-platform
   datasource:
-    url: jdbc:h2:mem:blog;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/blog}
+    driver-class-name: org.postgresql.Driver
+    username: ${SPRING_DATASOURCE_USERNAME:blog}
+    password: ${SPRING_DATASOURCE_PASSWORD:blog}
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     open-in-view: false
   flyway:
     enabled: true
   thymeleaf:
     cache: false
-
----
-spring:
-  config:
-    activate:
-      on-profile: prod
-  datasource:
-    url: jdbc:postgresql://localhost:5432/blog
-    username: blog
-    password: blog
-  jpa:
-    hibernate:
-      ddl-auto: validate

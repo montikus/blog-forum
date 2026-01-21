@@ -6,7 +6,15 @@ Spring Boot 3 (Java 21) application with REST API and server-side UI (Thymeleaf 
 - Java 21
 - Maven Wrapper (wbudowany)
 
-## Uruchomienie lokalne (H2)
+## Uruchomienie (PostgreSQL - domyslne)
+Upewnij sie, ze PostgreSQL dziala:
+- host: `localhost` (gdy aplikacja uruchamiana lokalnie)
+- port: `5432`
+- baza: `blog`
+- uzytkownik: `blog`
+- haslo: `blog`
+
+Uruchomienie aplikacji:
 ```
 ./mvnw spring-boot:run
 ```
@@ -15,11 +23,22 @@ Po starcie:
 - API: http://localhost:8080/api/v1
 - Panel admina: http://localhost:8080/admin
 
-## Profil produkcyjny (PostgreSQL)
-Ustaw w `application.yml` dane do bazy, a nastepnie:
+## Konfiguracja PostgreSQL
+Zmien dane w `application.yml`, jesli uruchamiasz baze na innych parametrach.
+
+### Polaczenie z kontenerem `blogcms-db`
+Jesli aplikacja dziala lokalnie, a baza w kontenerze, ustaw:
 ```
-./mvnw spring-boot:run -Dspring-boot.run.profiles=prod
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/blog
 ```
+
+Jesli uruchamiasz aplikacje w Dockerze w tej samej sieci co kontener `blogcms-db`, ustaw:
+```
+SPRING_DATASOURCE_URL=jdbc:postgresql://blogcms-db:5432/blog
+```
+
+## Testy (H2)
+Testy korzystaja z H2 in-memory zdefiniowanego w `src/test/resources/application.yml`.
 
 ## Konta demo (z migracji Flyway)
 Haslo dla wszystkich: `password`

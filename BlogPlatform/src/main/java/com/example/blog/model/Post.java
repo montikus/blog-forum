@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "posty")
@@ -32,6 +34,7 @@ public class Post {
 	private String tytul;
 
 	@Lob
+	@JdbcTypeCode(SqlTypes.LONGVARCHAR)
 	@Column(name = "tresc", nullable = false, columnDefinition = "TEXT")
 	private String tresc;
 

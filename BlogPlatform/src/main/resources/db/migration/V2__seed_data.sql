@@ -4,8 +4,8 @@ insert into uzytkownicy (username, email, haslo_hash, rola, created_at) values
 	('ola', 'ola@example.com', '$2a$10$7EqJtq98hPqEX7fNZaFWoO5eGQG1v6Y8WvY6q4Z87Z84qxdjQba1C', 'USER', current_timestamp);
 
 insert into posty (tytul, tresc, created_at, updated_at) values
-	('Pierwszy post', '<p>Witaj!</p>', current_timestamp, current_timestamp),
-	('Drugi post', '<p>Druga tresc</p>', current_timestamp, current_timestamp);
+	('Pierwszy post', 'Witaj!', current_timestamp, current_timestamp),
+	('Drugi post', 'Druga tresc', current_timestamp, current_timestamp);
 
 insert into post_autorzy (post_id, uzytkownik_id)
 select p.id, u.id
