@@ -51,7 +51,7 @@ Haslo dla wszystkich: `password`
 Import wykonywany z panelu admina lub przez REST.
 
 ### Import uzytkownikow
-Naglowki:
+Naglowki (takie same jak w eksporcie CSV):
 ```
 nazwa_uzytkownika,email,haslo,rola
 ```
@@ -62,18 +62,20 @@ anna,anna@example.com,sekret,ADMIN
 ```
 
 ### Import postow
-Naglowki:
+Naglowki (takie same jak w eksporcie CSV):
 ```
-tytul,tresc,autorzy
+id,tytul,tresc,autorzy,srednia_ocena,liczba_komentarzy
 ```
 `autorzy` to lista nazw uzytkownikow rozdzielona `;` (uzytkownicy musza istniec).
+Pola `id`, `srednia_ocena` i `liczba_komentarzy` sa ignorowane przy imporcie.
 Przyklad:
 ```
-Nowy post,<p>Tresc</p>,jan;ola
+1,Nowy post,<p>Tresc</p>,jan;ola,0,0
 ```
 
 ### Eksport
 - CSV: `/api/v1/admin/export/posts/csv`
+- CSV uzytkownicy: `/api/v1/admin/export/users/csv` (kolumna `haslo` jest pusta)
 - PDF (lista): `/api/v1/admin/export/posts/pdf`
 - PDF (pojedynczy): `/api/v1/admin/export/posts/{idPosta}/pdf`
 

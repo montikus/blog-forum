@@ -71,15 +71,13 @@ public class CsvService {
 		int liczbaPominietych = 0;
 		List<String> bledy = new ArrayList<>();
 
-		CSVFormat format = CSVFormat.DEFAULT.builder()
-				.setHeader(NAGLOWKI_UZYTKOWNICY)
-				.setSkipHeaderRecord(true)
-				.setTrim(true)
-				.setIgnoreEmptyLines(true)
-				.build();
+		CSVFormat format = przygotujFormatCsv();
 
 		try (Reader czytnik = new InputStreamReader(plik.getInputStream(), StandardCharsets.UTF_8);
 				CSVParser parser = new CSVParser(czytnik, format)) {
+			if (brakNaglowkow(parser, NAGLOWKI_UZYTKOWNICY)) {
+				return new ImportResultDto(0, 0, List.of("Brak wymaganych naglowkow CSV"));
+			}
 			for (CSVRecord rekord : parser) {
 				long numer = rekord.getRecordNumber();
 				String nazwaUzytkownika = rekord.get("nazwa_uzytkownika");
@@ -140,15 +138,13 @@ public class CsvService {
 		int liczbaPominietych = 0;
 		List<String> bledy = new ArrayList<>();
 
-		CSVFormat format = CSVFormat.DEFAULT.builder()
-				.setHeader(NAGLOWKI_POSTY)
-				.setSkipHeaderRecord(true)
-				.setTrim(true)
-				.setIgnoreEmptyLines(true)
-				.build();
+		CSVFormat format = przygotujFormatCsv();
 
 		try (Reader czytnik = new InputStreamReader(plik.getInputStream(), StandardCharsets.UTF_8);
 				CSVParser parser = new CSVParser(czytnik, format)) {
+			if (brakNaglowkow(parser, NAGLOWKI_POSTY)) {
+				return new ImportResultDto(0, 0, List.of("Brak wymaganych naglowkow CSV"));
+			}
 			for (CSVRecord rekord : parser) {
 				long numer = rekord.getRecordNumber();
 				String tytul = rekord.get("tytul");
@@ -200,6 +196,34 @@ public class CsvService {
 	}
 
 	@Transactional(readOnly = true)
+	public byte[] eksportujUzytkownikowCsv() {
+		List<User> uzytkownicy = repozytoriumUzytkownikow.findAll();
+		ByteArrayOutputStream strumienWyjscia = new ByteArrayOutputStream();
+
+		CSVFormat format = CSVFormat.DEFAULT.builder()
+				.setHeader(NAGLOWKI_UZYTKOWNICY)
+				.setTrim(true)
+				.build();
+
+		try (Writer pisarz = new OutputStreamWriter(strumienWyjscia, StandardCharsets.UTF_8);
+				CSVPrinter drukarka = new CSVPrinter(pisarz, format)) {
+			for (User uzytkownik : uzytkownicy) {
+				drukarka.printRecord(
+						uzytkownik.getNazwaUzytkownika(),
+						uzytkownik.getAdresEmail(),
+						"",
+						uzytkownik.getRola()
+				);
+			}
+			drukarka.flush();
+		} catch (IOException wyjatek) {
+			throw new IllegalStateException("Nie mozna wygenerowac CSV");
+		}
+
+		return strumienWyjscia.toByteArray();
+	}
+
+	@Transactional(readOnly = true)
 	public byte[] eksportujPostyCsv() {
 		List<PostDto> posty = serwisPostow.pobierzPostyDoEksportu();
 		ByteArrayOutputStream strumienWyjscia = new ByteArrayOutputStream();
@@ -230,6 +254,27 @@ public class CsvService {
 		}
 
 		return strumienWyjscia.toByteArray();
+	}
+
+	private CSVFormat przygotujFormatCsv() {
+		return CSVFormat.DEFAULT.builder()
+				.setHeader()
+				.setSkipHeaderRecord(true)
+				.setTrim(true)
+				.setIgnoreEmptyLines(true)
+				.build();
+	}
+
+	private boolean brakNaglowkow(CSVParser parser, String[] wymaganeNaglowki) {
+		if (parser.getHeaderMap() == null || parser.getHeaderMap().isEmpty()) {
+			return true;
+		}
+		for (String naglowek : wymaganeNaglowki) {
+			if (!parser.getHeaderMap().containsKey(naglowek)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean czyPuste(String wartosc) {

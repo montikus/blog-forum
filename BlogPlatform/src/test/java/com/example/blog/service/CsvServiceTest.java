@@ -71,8 +71,8 @@ class CsvServiceTest {
 
 	@Test
 	void powinienZglaszacBrakAutoraPrzyImporciePostow() {
-		String tresc = "tytul,tresc,autorzy\n"
-				+ "Nowy post,Tresc,nieznany\n";
+		String tresc = "id,tytul,tresc,autorzy,srednia_ocena,liczba_komentarzy\n"
+				+ "1,Nowy post,Tresc,nieznany,0,0\n";
 		MockMultipartFile plik = new MockMultipartFile(
 				"plik",
 				"posty.csv",
@@ -119,5 +119,20 @@ class CsvServiceTest {
 
 		assertThat(tekst).contains("id,tytul,tresc,autorzy,srednia_ocena,liczba_komentarzy");
 		assertThat(tekst).contains("Tytul");
+	}
+
+	@Test
+	void powinienEksportowacUzytkownikowDoCsv() {
+		User uzytkownik = new User();
+		uzytkownik.setNazwaUzytkownika("jan");
+		uzytkownik.setAdresEmail("jan@example.com");
+		uzytkownik.setRola(Role.USER);
+		when(repozytoriumUzytkownikow.findAll()).thenReturn(List.of(uzytkownik));
+
+		byte[] wynik = serwisCsv.eksportujUzytkownikowCsv();
+		String tekst = new String(wynik, StandardCharsets.UTF_8);
+
+		assertThat(tekst).contains("nazwa_uzytkownika,email,haslo,rola");
+		assertThat(tekst).contains("jan,jan@example.com,,USER");
 	}
 }

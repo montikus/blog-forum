@@ -3,9 +3,14 @@
 :root {
 	--kolor-tla: #f6f0e6;
 	--kolor-akcent: #c46a2c;
+	--kolor-akcent-ciemny: #b15d24;
 	--kolor-ciemny: #1f2a2e;
 	--kolor-jasny: #ffffff;
 	--kolor-wyciszenie: #5a6a72;
+	--kolor-ramka: rgba(31, 42, 46, 0.12);
+	--kolor-karta: #ffffff;
+	--cien-karty: 0 18px 30px rgba(31, 42, 46, 0.14);
+	--cien-nawigacji: 0 14px 28px rgba(15, 20, 23, 0.25);
 	--font-tytul: "Fraunces", serif;
 	--font-tekst: "Space Grotesk", sans-serif;
 }
@@ -14,9 +19,25 @@ body {
 	font-family: var(--font-tekst);
 	color: var(--kolor-ciemny);
 	background:
-		radial-gradient(circle at 10% 20%, rgba(196, 106, 44, 0.08), transparent 45%),
-		radial-gradient(circle at 90% 0%, rgba(31, 42, 46, 0.08), transparent 40%),
+		radial-gradient(circle at 12% 12%, rgba(196, 106, 44, 0.14), transparent 45%),
+		radial-gradient(circle at 88% 8%, rgba(31, 42, 46, 0.12), transparent 40%),
+		linear-gradient(120deg, rgba(255, 255, 255, 0.65), rgba(246, 240, 230, 0.9)),
 		var(--kolor-tla);
+}
+
+main {
+	animation: wejscie 0.6s ease-out;
+}
+
+@keyframes wejscie {
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 h1, h2, h3, h4, h5 {
@@ -29,6 +50,19 @@ h1, h2, h3, h4, h5 {
 	font-weight: 700;
 }
 
+.page-header {
+	background: rgba(255, 255, 255, 0.8);
+	border: 1px solid var(--kolor-ramka);
+	border-radius: 16px;
+	padding: 1rem 1.5rem;
+	box-shadow: 0 12px 24px rgba(31, 42, 46, 0.12);
+}
+
+.page-header.d-flex {
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
 .btn-primary {
 	background-color: var(--kolor-akcent);
 	border-color: var(--kolor-akcent);
@@ -36,8 +70,35 @@ h1, h2, h3, h4, h5 {
 
 .btn-primary:hover,
 .btn-primary:focus {
-	background-color: #b15d24;
-	border-color: #b15d24;
+	background-color: var(--kolor-akcent-ciemny);
+	border-color: var(--kolor-akcent-ciemny);
+}
+
+.navbar-modern {
+	background: linear-gradient(120deg, #1b2428, #1f2a2e 50%, #28353c);
+	box-shadow: var(--cien-nawigacji);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.navbar-modern .nav-link {
+	color: rgba(255, 255, 255, 0.8);
+}
+
+.navbar-modern .nav-link:hover,
+.navbar-modern .nav-link:focus {
+	color: #ffffff;
+}
+
+.btn-search {
+	border-color: rgba(255, 255, 255, 0.6);
+	color: #ffffff;
+	letter-spacing: 0.4px;
+}
+
+.btn-search:hover,
+.btn-search:focus {
+	background: rgba(255, 255, 255, 0.18);
+	border-color: #ffffff;
 }
 
 .card, .list-group-item, .table {
@@ -45,8 +106,55 @@ h1, h2, h3, h4, h5 {
 	border-radius: 12px;
 }
 
+.card, .list-group-item {
+	background-color: var(--kolor-karta);
+	box-shadow: var(--cien-karty);
+}
+
 .table {
 	overflow: hidden;
+}
+
+.table thead th {
+	background: rgba(31, 42, 46, 0.06);
+	border-bottom: 1px solid var(--kolor-ramka);
+	color: var(--kolor-wyciszenie);
+	font-size: 0.72rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.table tbody tr {
+	border-bottom: 1px solid var(--kolor-ramka);
+}
+
+.table tbody tr:last-child {
+	border-bottom: none;
+}
+
+.table tbody tr:hover {
+	background: rgba(196, 106, 44, 0.06);
+}
+
+.table td, .table th {
+	vertical-align: middle;
+}
+
+.form-control, .form-select {
+	border-radius: 10px;
+	border-color: var(--kolor-ramka);
+}
+
+.form-label {
+	font-size: 0.75rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--kolor-wyciszenie);
+}
+
+.form-control:focus, .form-select:focus {
+	border-color: var(--kolor-akcent);
+	box-shadow: 0 0 0 0.2rem rgba(196, 106, 44, 0.2);
 }
 
 .page-link {
@@ -59,5 +167,12 @@ h1, h2, h3, h4, h5 {
 }
 
 footer {
-	background: rgba(255, 255, 255, 0.7);
+	background: rgba(255, 255, 255, 0.75);
+	backdrop-filter: blur(10px);
+}
+
+@media (max-width: 991.98px) {
+	.btn-search {
+		margin-top: 0.5rem;
+	}
 }

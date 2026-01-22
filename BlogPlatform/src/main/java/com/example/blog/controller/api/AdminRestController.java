@@ -62,6 +62,15 @@ public class AdminRestController {
 				.body(dane);
 	}
 
+	@GetMapping("/export/users/csv")
+	public ResponseEntity<byte[]> eksportujUzytkownikowCsv() {
+		byte[] dane = serwisCsv.eksportujUzytkownikowCsv();
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=uzytkownicy.csv")
+				.contentType(MediaType.parseMediaType("text/csv"))
+				.body(dane);
+	}
+
 	@GetMapping("/export/posts/pdf")
 	public ResponseEntity<byte[]> eksportujPostyPdf() {
 		byte[] dane = serwisPdf.eksportujListePostowPdf();

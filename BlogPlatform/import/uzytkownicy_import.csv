@@ -1,0 +1,4 @@
+nazwa_uzytkownika,email,haslo,rola
+adam,adam@example.com,sekret123,USER
+ewa,ewa@example.com,sekret123,USER
+marta,marta@example.com,sekret123,ADMIN

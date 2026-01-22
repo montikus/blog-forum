@@ -5,7 +5,9 @@
 	<title th:text="${trybEdycji} ? 'Edycja posta' : 'Nowy post'">Post</title>
 </head>
 <section>
-	<h1 th:text="${trybEdycji} ? 'Edycja posta' : 'Nowy post'">Post</h1>
+	<div class="page-header mb-4">
+		<h1 class="mb-0" th:text="${trybEdycji} ? 'Edycja posta' : 'Nowy post'">Post</h1>
+	</div>
 	<form th:object="${formularz}"
 		  th:action="${trybEdycji} ? @{/posts/{idPosta}/edit(idPosta=${idPosta})} : @{/posts}"
 		  method="post">
