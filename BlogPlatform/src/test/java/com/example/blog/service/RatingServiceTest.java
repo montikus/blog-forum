@@ -71,6 +71,36 @@ class RatingServiceTest {
 		verifyNoInteractions(repozytoriumPostow);
 	}
 
+	@Test
+	void powinienDodacNowaOceneGdyBrakPoprzedniej() {
+		User uzytkownik = utworzUzytkownika(4L);
+		Post post = utworzPost(6L);
+		Rating zapisana = new Rating();
+		zapisana.setId(10L);
+		zapisana.setPost(post);
+		zapisana.setUzytkownik(uzytkownik);
+		zapisana.setWartosc(5);
+
+		when(repozytoriumPostow.findById(6L)).thenReturn(Optional.of(post));
+		when(repozytoriumOcen.znajdzPoIdPostaIUzytkownika(6L, 4L)).thenReturn(Optional.empty());
+		when(repozytoriumOcen.save(any(Rating.class))).thenReturn(zapisana);
+		when(repozytoriumOcen.pobierzSredniaDlaPosta(6L)).thenReturn(5.0);
+
+		RatingDto wynik = serwisOcen.ocenPost(6L, 5, uzytkownik);
+
+		assertThat(wynik.getId()).isEqualTo(10L);
+		assertThat(wynik.getWartosc()).isEqualTo(5);
+		assertThat(wynik.getUzytkownikId()).isEqualTo(4L);
+	}
+
+	@Test
+	void powinienRzucicBladGdyPostNieIstniejePrzySredniej() {
+		when(repozytoriumPostow.existsById(99L)).thenReturn(false);
+
+		assertThatThrownBy(() -> serwisOcen.pobierzSrednia(99L))
+				.isInstanceOf(com.example.blog.exception.ResourceNotFoundException.class);
+	}
+
 	private User utworzUzytkownika(Long id) {
 		User uzytkownik = new User();
 		uzytkownik.setId(id);

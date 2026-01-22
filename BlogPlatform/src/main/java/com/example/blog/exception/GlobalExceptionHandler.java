@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -59,6 +60,17 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(
 				utworzBlad(HttpStatus.BAD_REQUEST, wyjatek.getMessage(), zadanie.getRequestURI(), null),
 				HttpStatus.BAD_REQUEST
+		);
+	}
+
+	@ExceptionHandler(NoResourceFoundException.class)
+	public ResponseEntity<BladOdpowiedzi> obsluzBrakZasobuStatycznego(
+			NoResourceFoundException wyjatek,
+			HttpServletRequest zadanie
+	) {
+		return new ResponseEntity<>(
+				utworzBlad(HttpStatus.NOT_FOUND, "Nie znaleziono zasobu statycznego", zadanie.getRequestURI(), null),
+				HttpStatus.NOT_FOUND
 		);
 	}
 

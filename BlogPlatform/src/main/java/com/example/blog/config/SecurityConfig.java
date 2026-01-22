@@ -27,7 +27,10 @@ public class SecurityConfig {
 								"/posts/*",
 								"/search",
 								"/css/**",
-								"/api/v1/posts/**"
+								"/api/v1/posts/**",
+								"/swagger-ui/**",
+								"/swagger-ui.html",
+								"/v3/api-docs/**"
 						).permitAll()
 						.requestMatchers("/login", "/register").permitAll()
 						.requestMatchers("/admin/**", "/api/v1/admin/**").hasRole("ADMIN")

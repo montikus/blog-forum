@@ -14,3 +14,7 @@ spring:
     enabled: true
   thymeleaf:
     cache: false
+
+springdoc:
+  packages-to-scan: com.example.blog.controller.api
+  paths-to-match: /api/**

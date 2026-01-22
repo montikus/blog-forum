@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,13 +32,13 @@ public class MessageRestController {
 	}
 
 	@GetMapping("/inbox")
-	public Page<MessageDto> pobierzInbox(Pageable stronicowanie) {
+	public Page<MessageDto> pobierzInbox(@ParameterObject Pageable stronicowanie) {
 		User aktualny = serwisBiezacegoUzytkownika.pobierzAktualnegoUzytkownika();
 		return serwisWiadomosci.pobierzOdebrane(aktualny, stronicowanie);
 	}
 
 	@GetMapping("/sent")
-	public Page<MessageDto> pobierzSent(Pageable stronicowanie) {
+	public Page<MessageDto> pobierzSent(@ParameterObject Pageable stronicowanie) {
 		User aktualny = serwisBiezacegoUzytkownika.pobierzAktualnegoUzytkownika();
 		return serwisWiadomosci.pobierzWyslane(aktualny, stronicowanie);
 	}

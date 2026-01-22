@@ -22,6 +22,7 @@ Po starcie:
 - UI: http://localhost:8080
 - API: http://localhost:8080/api/v1
 - Panel admina: http://localhost:8080/admin
+- Swagger UI: http://localhost:8080/swagger-ui/index.html
 
 ## Konfiguracja PostgreSQL
 Zmien dane w `application.yml`, jesli uruchamiasz baze na innych parametrach.

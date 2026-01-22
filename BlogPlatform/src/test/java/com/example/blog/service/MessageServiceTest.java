@@ -9,6 +9,7 @@ import com.example.blog.dao.PostRaportDao;
 import com.example.blog.dto.MessageDto;
 import com.example.blog.mapper.MessageMapper;
 import com.example.blog.model.Message;
+import com.example.blog.model.Post;
 import com.example.blog.model.Role;
 import com.example.blog.model.User;
 import com.example.blog.repository.MessageRepository;
@@ -93,6 +94,28 @@ class MessageServiceTest {
 
 		assertThat(wynik.getContent()).hasSize(1);
 		verify(daoRaportow).oznaczWiadomosciJakoPrzeczytane(5L);
+	}
+
+	@Test
+	void powinienWysylacWiadomoscPoIdOdbiorcyZPowiazaniemPosta() {
+		User nadawca = utworzUzytkownika(1L, "nadawca");
+		User odbiorca = utworzUzytkownika(2L, "odbiorca");
+		Post post = new Post();
+		post.setId(9L);
+		Message wiadomosc = new Message();
+		wiadomosc.setId(8L);
+		MessageDto dto = new MessageDto();
+		dto.setId(8L);
+		dto.setTresc("Powiazana");
+		when(repozytoriumUzytkownikow.findById(2L)).thenReturn(Optional.of(odbiorca));
+		when(repozytoriumPostow.findById(9L)).thenReturn(Optional.of(post));
+		when(repozytoriumWiadomosci.save(any(Message.class))).thenReturn(wiadomosc);
+		when(mapperWiadomosci.mapujNaDto(wiadomosc)).thenReturn(dto);
+
+		MessageDto wynik = serwisWiadomosci.wyslijWiadomosc(2L, "Powiazana", nadawca, 9L);
+
+		assertThat(wynik.getId()).isEqualTo(8L);
+		assertThat(wynik.getTresc()).isEqualTo("Powiazana");
 	}
 
 	private User utworzUzytkownika(Long id, String nazwa) {

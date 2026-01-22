@@ -10,6 +10,7 @@ import java.net.URI;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,7 +35,7 @@ public class PostRestController {
 	}
 
 	@GetMapping
-	public Page<PostDto> pobierzPosty(Pageable stronicowanie) {
+	public Page<PostDto> pobierzPosty(@ParameterObject Pageable stronicowanie) {
 		return serwisPostow.pobierzWszystkie(stronicowanie);
 	}
 
@@ -71,7 +72,7 @@ public class PostRestController {
 	public Page<PostDto> wyszukajPosty(
 			@RequestParam(name = "query", required = false) String fraza,
 			@RequestParam(name = "author", required = false) String nazwaAutora,
-			Pageable stronicowanie
+			@ParameterObject Pageable stronicowanie
 	) {
 		return serwisPostow.wyszukajPosty(fraza, nazwaAutora, stronicowanie);
 	}

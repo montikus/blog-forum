@@ -16,6 +16,7 @@ import com.example.blog.model.Role;
 import com.example.blog.model.User;
 import com.example.blog.repository.CommentRepository;
 import com.example.blog.repository.PostRepository;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,6 +76,35 @@ class CommentServiceTest {
 				.isInstanceOf(ForbiddenException.class);
 
 		verify(repozytoriumKomentarzy, never()).delete(any(Comment.class));
+	}
+
+	@Test
+	void powinienPozwalacUsunacKomentarzAdministratorowi() {
+		User autor = utworzUzytkownika(1L, Role.USER);
+		User admin = utworzUzytkownika(2L, Role.ADMIN);
+		Comment komentarz = new Comment();
+		komentarz.setId(7L);
+		komentarz.setAutor(autor);
+		when(repozytoriumKomentarzy.findById(7L)).thenReturn(Optional.of(komentarz));
+
+		serwisKomentarzy.usunKomentarz(7L, admin);
+
+		verify(repozytoriumKomentarzy).delete(komentarz);
+	}
+
+	@Test
+	void powinienPobracKomentarzeDlaPosta() {
+		Comment komentarz = new Comment();
+		komentarz.setId(3L);
+		CommentDto dto = new CommentDto();
+		dto.setId(3L);
+		when(repozytoriumKomentarzy.znajdzPoIdPosta(11L)).thenReturn(List.of(komentarz));
+		when(mapperKomentarzy.mapujNaDto(komentarz)).thenReturn(dto);
+
+		List<CommentDto> wynik = serwisKomentarzy.pobierzKomentarzeDlaPosta(11L);
+
+		assertThat(wynik).hasSize(1);
+		assertThat(wynik.getFirst().getId()).isEqualTo(3L);
 	}
 
 	private User utworzUzytkownika(Long id, Role rola) {

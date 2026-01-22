@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.example.blog.dto.PostDto;
 import com.example.blog.dto.PostFormDto;
 import com.example.blog.exception.ForbiddenException;
+import com.example.blog.exception.ResourceNotFoundException;
 import com.example.blog.mapper.PostMapper;
 import com.example.blog.model.Post;
 import com.example.blog.model.Role;
@@ -25,6 +26,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -107,6 +113,52 @@ class PostServiceTest {
 
 		assertThat(post.getAutorzy()).hasSize(1);
 		assertThat(post.getAutorzy()).contains(autor);
+	}
+
+	@Test
+	void powinienEdytowacPostDlaAutora() {
+		User autor = utworzUzytkownika(1L, Role.USER);
+		Post post = utworzPost(12L, autor);
+		PostFormDto formularz = new PostFormDto();
+		formularz.setTytul("Nowy tytul");
+		formularz.setTresc("Nowa tresc");
+		PostDto dto = new PostDto();
+		dto.setId(12L);
+
+		when(repozytoriumPostow.findById(12L)).thenReturn(Optional.of(post));
+		when(repozytoriumOcen.pobierzSredniaDlaPosta(12L)).thenReturn(2.5);
+		when(mapperPostow.mapujNaDto(post, 2.5, 0)).thenReturn(dto);
+
+		PostDto wynik = serwisPostow.edytujPost(12L, formularz, autor);
+
+		assertThat(wynik.getId()).isEqualTo(12L);
+		assertThat(post.getTytul()).isEqualTo("Nowy tytul");
+		assertThat(post.getTresc()).isEqualTo("Nowa tresc");
+	}
+
+	@Test
+	void powinienRzucicBladGdyNieZnalezionoWspolautorow() {
+		User autor = utworzUzytkownika(1L, Role.USER);
+		Post post = utworzPost(44L, autor);
+		when(repozytoriumPostow.findById(44L)).thenReturn(Optional.of(post));
+		when(repozytoriumUzytkownikow.findAllById(List.of(9L))).thenReturn(List.of());
+
+		assertThatThrownBy(() -> serwisPostow.ustawWspolautorow(44L, List.of(9L), autor))
+				.isInstanceOf(ResourceNotFoundException.class);
+	}
+
+	@Test
+	void powinienWyszukiwacPostyPoSpecyfikacji() {
+		User autor = utworzUzytkownika(3L, Role.USER);
+		Post post = utworzPost(21L, autor);
+		Page<Post> strona = new PageImpl<>(List.of(post));
+		when(repozytoriumPostow.findAll(any(Specification.class), any(Pageable.class))).thenReturn(strona);
+		when(repozytoriumOcen.pobierzSredniaDlaPosta(21L)).thenReturn(0.0);
+		when(mapperPostow.mapujNaDto(post, 0.0, 0)).thenReturn(new PostDto());
+
+		Page<PostDto> wynik = serwisPostow.wyszukajPosty("test", "autor3", PageRequest.of(0, 10));
+
+		assertThat(wynik.getContent()).hasSize(1);
 	}
 
 	private User utworzUzytkownika(Long id, Role rola) {
