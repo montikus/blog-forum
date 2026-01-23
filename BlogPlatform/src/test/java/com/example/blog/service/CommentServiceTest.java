@@ -130,6 +130,15 @@ class CommentServiceTest {
 				.isInstanceOf(ResourceNotFoundException.class);
 	}
 
+	@Test
+	void powinienRzucicBladGdyKomentarzNieIstnieje() {
+		User autor = utworzUzytkownika(1L, Role.USER);
+		when(repozytoriumKomentarzy.findById(123L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> serwisKomentarzy.usunKomentarz(123L, autor))
+				.isInstanceOf(ResourceNotFoundException.class);
+	}
+
 	private User utworzUzytkownika(Long id, Role rola) {
 		User uzytkownik = new User();
 		uzytkownik.setId(id);

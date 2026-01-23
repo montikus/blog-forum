@@ -2,6 +2,7 @@ package com.example.blog.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.blog.dto.UserDto;
@@ -38,6 +39,15 @@ class UserServiceTest {
 		User wynik = serwisUzytkownikow.pobierzPoNazwieUzytkownika("jan_test");
 
 		assertThat(wynik.getId()).isEqualTo(1L);
+	}
+
+	@Test
+	void powinienRzucacBladGdyBrakUzytkownikaPoNazwie() {
+		when(repozytoriumUzytkownikow.znajdzPoNazwieUzytkownika("brak"))
+				.thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> serwisUzytkownikow.pobierzPoNazwieUzytkownika("brak"))
+				.isInstanceOf(ResourceNotFoundException.class);
 	}
 
 	@Test
@@ -96,6 +106,17 @@ class UserServiceTest {
 
 		assertThat(nazwaIstnieje).isTrue();
 		assertThat(emailIstnieje).isFalse();
+	}
+
+	@Test
+	void powinienZapisacUzytkownika() {
+		User uzytkownik = utworzUzytkownika(8L, "save_test");
+		when(repozytoriumUzytkownikow.save(uzytkownik)).thenReturn(uzytkownik);
+
+		User wynik = serwisUzytkownikow.zapiszUzytkownika(uzytkownik);
+
+		assertThat(wynik.getId()).isEqualTo(8L);
+		verify(repozytoriumUzytkownikow).save(uzytkownik);
 	}
 
 	private User utworzUzytkownika(Long id, String nazwa) {

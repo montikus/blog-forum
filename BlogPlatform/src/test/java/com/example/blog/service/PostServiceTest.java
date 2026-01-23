@@ -3,6 +3,7 @@ package com.example.blog.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -116,6 +117,18 @@ class PostServiceTest {
 	}
 
 	@Test
+	void powinienDodacAktualnegoAutoraGdyListaNull() {
+		User autor = utworzUzytkownika(6L, Role.USER);
+		Post post = utworzPost(31L, autor);
+		when(repozytoriumPostow.findById(31L)).thenReturn(Optional.of(post));
+		when(repozytoriumUzytkownikow.findAllById(List.of())).thenReturn(List.of());
+
+		serwisPostow.ustawWspolautorow(31L, null, autor);
+
+		assertThat(post.getAutorzy()).containsExactly(autor);
+	}
+
+	@Test
 	void powinienEdytowacPostDlaAutora() {
 		User autor = utworzUzytkownika(1L, Role.USER);
 		Post post = utworzPost(12L, autor);
@@ -162,6 +175,21 @@ class PostServiceTest {
 	}
 
 	@Test
+	void powinienZwracacMojePosty() {
+		User autor = utworzUzytkownika(7L, Role.USER);
+		Post post = utworzPost(70L, autor);
+		Page<Post> strona = new PageImpl<>(List.of(post));
+		when(repozytoriumPostow.znajdzPoAutorachNazwieUzytkownika(eq(autor.getNazwaUzytkownika()), any(Pageable.class)))
+				.thenReturn(strona);
+		when(repozytoriumOcen.pobierzSredniaDlaPosta(70L)).thenReturn(3.0);
+		when(mapperPostow.mapujNaDto(post, 3.0, 0)).thenReturn(new PostDto());
+
+		Page<PostDto> wynik = serwisPostow.znajdzMojePosty(autor, PageRequest.of(0, 5));
+
+		assertThat(wynik.getContent()).hasSize(1);
+	}
+
+	@Test
 	void powinienZwracacFormularzDoEdycji() {
 		User autor = utworzUzytkownika(1L, Role.USER);
 		User wspolautor = utworzUzytkownika(2L, Role.USER);
@@ -174,6 +202,22 @@ class PostServiceTest {
 		assertThat(formularz.getTytul()).isEqualTo(post.getTytul());
 		assertThat(formularz.getTresc()).isEqualTo(post.getTresc());
 		assertThat(formularz.getWspolautorzyId()).containsExactlyInAnyOrder(1L, 2L);
+	}
+
+	@Test
+	void powinienPobracPostyDoEksportu() {
+		User autor = utworzUzytkownika(8L, Role.USER);
+		Post post = utworzPost(80L, autor);
+		when(repozytoriumPostow.findAll()).thenReturn(List.of(post));
+		when(repozytoriumOcen.pobierzSredniaDlaPosta(80L)).thenReturn(4.0);
+		PostDto dto = new PostDto();
+		dto.setId(80L);
+		when(mapperPostow.mapujNaDto(post, 4.0, 0)).thenReturn(dto);
+
+		List<PostDto> wynik = serwisPostow.pobierzPostyDoEksportu();
+
+		assertThat(wynik).hasSize(1);
+		assertThat(wynik.getFirst().getId()).isEqualTo(80L);
 	}
 
 	@Test

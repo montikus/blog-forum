@@ -11,14 +11,19 @@ import static org.mockito.Mockito.when;
 import com.example.blog.dto.ImportResultDto;
 import com.example.blog.dto.PostDto;
 import com.example.blog.dto.UserDto;
+import com.example.blog.model.Post;
 import com.example.blog.model.Role;
 import com.example.blog.model.User;
 import com.example.blog.repository.PostRepository;
 import com.example.blog.repository.UserRepository;
+import java.io.IOException;
+import java.io.StringReader;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
-import java.io.IOException;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -76,6 +81,30 @@ class CsvServiceTest {
 	}
 
 	@Test
+	void powinienDomyslnieUstawiacRoleUserGdyBrakRoli() {
+		String tresc = "nazwa_uzytkownika,email,haslo,rola\n"
+				+ "  jan  ,  jan@example.com  ,  haslo  ,  \n";
+		MockMultipartFile plik = new MockMultipartFile(
+				"plik",
+				"uzytkownicy.csv",
+				"text/csv",
+				tresc.getBytes(StandardCharsets.UTF_8)
+		);
+		when(repozytoriumUzytkownikow.istniejePoNazwieUzytkownika(anyString())).thenReturn(false);
+		when(repozytoriumUzytkownikow.istniejePoAdresieEmail(anyString())).thenReturn(false);
+		when(szyfratorHasel.encode(anyString())).thenReturn("hash");
+		ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+
+		ImportResultDto wynik = serwisCsv.importujUzytkownikow(plik);
+
+		assertThat(wynik.getLiczbaZaimportowanych()).isEqualTo(1);
+		verify(repozytoriumUzytkownikow, times(1)).save(captor.capture());
+		assertThat(captor.getValue().getRola()).isEqualTo(Role.USER);
+		assertThat(captor.getValue().getNazwaUzytkownika()).isEqualTo("jan");
+		assertThat(captor.getValue().getAdresEmail()).isEqualTo("jan@example.com");
+	}
+
+	@Test
 	void powinienOdrzucacBrakNaglowkowUzytkownicy() {
 		String tresc = "nazwa_uzytkownika,email,haslo\n"
 				+ "jan,jan@example.com,haslo\n";
@@ -90,6 +119,29 @@ class CsvServiceTest {
 
 		assertThat(wynik.getLiczbaZaimportowanych()).isEqualTo(0);
 		assertThat(wynik.getBledy()).contains("Brak wymaganych naglowkow CSV");
+	}
+
+	@Test
+	void powinienZwracacBladGdyPlikNullUzytkownicy() {
+		ImportResultDto wynik = serwisCsv.importujUzytkownikow(null);
+
+		assertThat(wynik.getLiczbaZaimportowanych()).isEqualTo(0);
+		assertThat(wynik.getLiczbaPominietych()).isEqualTo(0);
+		assertThat(wynik.getBledy()).contains("Plik jest pusty");
+	}
+
+	@Test
+	void powinienWykrywacBrakNaglowkowGdyParserNieMaMapy() throws Exception {
+		String tresc = "a,b\n1,2\n";
+		CSVFormat format = CSVFormat.DEFAULT.builder().build();
+		try (CSVParser parser = new CSVParser(new StringReader(tresc), format)) {
+			Method metoda = CsvService.class.getDeclaredMethod("brakNaglowkow", CSVParser.class, String[].class);
+			metoda.setAccessible(true);
+
+			boolean wynik = (boolean) metoda.invoke(serwisCsv, parser, new String[] {"kolumna"});
+
+			assertThat(wynik).isTrue();
+		}
 	}
 
 	@Test
@@ -286,6 +338,70 @@ class CsvServiceTest {
 		assertThat(wynik.getLiczbaZaimportowanych()).isEqualTo(1);
 		verify(repozytoriumPostow, times(1)).save(captor.capture());
 		assertThat(captor.getValue().getAutorzy()).hasSize(2);
+	}
+
+	@Test
+	void powinienPrzycinacDanePostaIZwrocicUnikalnychAutorow() {
+		String tresc = "tytul,tresc,autorzy\n"
+				+ "  Tytul  ,  Tresc  ,  jan ; jan ; ola  \n";
+		MockMultipartFile plik = new MockMultipartFile(
+				"plik",
+				"posty.csv",
+				"text/csv",
+				tresc.getBytes(StandardCharsets.UTF_8)
+		);
+		when(repozytoriumUzytkownikow.znajdzPoNazwieUzytkownika("jan"))
+				.thenReturn(Optional.of(utworzUzytkownika("jan")));
+		when(repozytoriumUzytkownikow.znajdzPoNazwieUzytkownika("ola"))
+				.thenReturn(Optional.of(utworzUzytkownika("ola")));
+		ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
+
+		ImportResultDto wynik = serwisCsv.importujPosty(plik);
+
+		assertThat(wynik.getLiczbaZaimportowanych()).isEqualTo(1);
+		verify(repozytoriumUzytkownikow, times(1)).znajdzPoNazwieUzytkownika("jan");
+		verify(repozytoriumUzytkownikow, times(1)).znajdzPoNazwieUzytkownika("ola");
+		verify(repozytoriumPostow, times(1)).save(captor.capture());
+		assertThat(captor.getValue().getTytul()).isEqualTo("Tytul");
+		assertThat(captor.getValue().getTresc()).isEqualTo("Tresc");
+		assertThat(captor.getValue().getAutorzy()).hasSize(2);
+	}
+
+	@Test
+	void powinienIgnorowacPusteNazwyAutorowPodczasImportu() {
+		String tresc = "tytul,tresc,autorzy\n"
+				+ "Post,Tresc,jan; ; ;ola; \n";
+		MockMultipartFile plik = new MockMultipartFile(
+				"plik",
+				"posty.csv",
+				"text/csv",
+				tresc.getBytes(StandardCharsets.UTF_8)
+		);
+		when(repozytoriumUzytkownikow.znajdzPoNazwieUzytkownika("jan"))
+				.thenReturn(Optional.of(utworzUzytkownika("jan")));
+		when(repozytoriumUzytkownikow.znajdzPoNazwieUzytkownika("ola"))
+				.thenReturn(Optional.of(utworzUzytkownika("ola")));
+
+		ImportResultDto wynik = serwisCsv.importujPosty(plik);
+
+		assertThat(wynik.getLiczbaZaimportowanych()).isEqualTo(1);
+		verify(repozytoriumUzytkownikow, times(1)).znajdzPoNazwieUzytkownika("jan");
+		verify(repozytoriumUzytkownikow, times(1)).znajdzPoNazwieUzytkownika("ola");
+	}
+
+	@Test
+	void powinienZwracacBladGdyPlikPustyPosty() {
+		MockMultipartFile plik = new MockMultipartFile(
+				"plik",
+				"posty.csv",
+				"text/csv",
+				new byte[0]
+		);
+
+		ImportResultDto wynik = serwisCsv.importujPosty(plik);
+
+		assertThat(wynik.getLiczbaZaimportowanych()).isEqualTo(0);
+		assertThat(wynik.getBledy()).contains("Plik jest pusty");
 	}
 
 	@Test

@@ -74,6 +74,21 @@ class DtoTest {
 	}
 
 	@Test
+	void shouldHandleImportResultDtoSetters() {
+		ImportResultDto dto = new ImportResultDto();
+		List<String> bledy = new ArrayList<>();
+		bledy.add("blad");
+
+		dto.setLiczbaZaimportowanych(5);
+		dto.setLiczbaPominietych(6);
+		dto.setBledy(bledy);
+
+		assertThat(dto.getLiczbaZaimportowanych()).isEqualTo(5);
+		assertThat(dto.getLiczbaPominietych()).isEqualTo(6);
+		assertThat(dto.getBledy()).containsExactly("blad");
+	}
+
+	@Test
 	void shouldHandleCommentDtoFields() {
 		CommentDto dto = new CommentDto();
 		Instant czas = Instant.parse("2024-03-01T12:00:00Z");
@@ -131,12 +146,28 @@ class DtoTest {
 		assertThat(dto.getAdresEmail()).isEqualTo("user@example.com");
 		assertThat(dto.getRola()).isEqualTo(Role.ADMIN);
 
+		dto.setId(21L);
 		dto.setNazwaUzytkownika("user2");
 		dto.setAdresEmail("user2@example.com");
 		dto.setRola(Role.USER);
 
+		assertThat(dto.getId()).isEqualTo(21L);
 		assertThat(dto.getNazwaUzytkownika()).isEqualTo("user2");
 		assertThat(dto.getAdresEmail()).isEqualTo("user2@example.com");
+		assertThat(dto.getRola()).isEqualTo(Role.USER);
+	}
+
+	@Test
+	void shouldHandleUserDtoDefaultConstructor() {
+		UserDto dto = new UserDto();
+		dto.setId(30L);
+		dto.setNazwaUzytkownika("nowy");
+		dto.setAdresEmail("nowy@example.com");
+		dto.setRola(Role.USER);
+
+		assertThat(dto.getId()).isEqualTo(30L);
+		assertThat(dto.getNazwaUzytkownika()).isEqualTo("nowy");
+		assertThat(dto.getAdresEmail()).isEqualTo("nowy@example.com");
 		assertThat(dto.getRola()).isEqualTo(Role.USER);
 	}
 }
