@@ -1,11 +1,13 @@
 package com.example.blog.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.example.blog.dto.PostDto;
 import com.example.blog.dto.UserDto;
+import com.example.blog.exception.ResourceNotFoundException;
 import com.example.blog.mapper.PostMapper;
 import com.example.blog.model.Post;
 import com.example.blog.model.Role;
@@ -83,6 +85,35 @@ class AdminServiceTest {
 		serwisAdmina.usunPost(5L);
 
 		verify(repozytoriumPostow).delete(post);
+	}
+
+	@Test
+	void powinienRzucicBladGdyBrakUzytkownika() {
+		when(repozytoriumUzytkownikow.findById(9L)).thenReturn(java.util.Optional.empty());
+
+		assertThatThrownBy(() -> serwisAdmina.usunUzytkownika(9L))
+				.isInstanceOf(ResourceNotFoundException.class);
+	}
+
+	@Test
+	void powinienRzucicBladGdyBrakPosta() {
+		when(repozytoriumPostow.findById(8L)).thenReturn(java.util.Optional.empty());
+
+		assertThatThrownBy(() -> serwisAdmina.usunPost(8L))
+				.isInstanceOf(ResourceNotFoundException.class);
+	}
+
+	@Test
+	void powinienMapowacPostyGdyKomentarzeNull() {
+		Post post = utworzPost(12L, "Null comments");
+		post.setKomentarze(null);
+		when(repozytoriumPostow.findAll()).thenReturn(List.of(post));
+		when(repozytoriumOcen.pobierzSredniaDlaPosta(12L)).thenReturn(1.5);
+		when(mapperPostow.mapujNaDto(post, 1.5, 0)).thenReturn(new PostDto());
+
+		List<PostDto> wynik = serwisAdmina.pobierzPosty();
+
+		assertThat(wynik).hasSize(1);
 	}
 
 	private User utworzUzytkownika(Long id, String nazwa) {

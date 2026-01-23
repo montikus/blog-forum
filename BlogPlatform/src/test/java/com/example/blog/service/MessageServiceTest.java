@@ -1,12 +1,16 @@
 package com.example.blog.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.example.blog.dao.PostRaportDao;
 import com.example.blog.dto.MessageDto;
+import com.example.blog.exception.ResourceNotFoundException;
 import com.example.blog.mapper.MessageMapper;
 import com.example.blog.model.Message;
 import com.example.blog.model.Post;
@@ -116,6 +120,42 @@ class MessageServiceTest {
 
 		assertThat(wynik.getId()).isEqualTo(8L);
 		assertThat(wynik.getTresc()).isEqualTo("Powiazana");
+	}
+
+	@Test
+	void powinienRzucacBladGdyBrakOdbiorcyPoId() {
+		User nadawca = utworzUzytkownika(1L, "nadawca");
+		when(repozytoriumUzytkownikow.findById(99L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> serwisWiadomosci.wyslijWiadomosc(99L, "Test", nadawca, null))
+				.isInstanceOf(ResourceNotFoundException.class);
+
+		verify(repozytoriumWiadomosci, never()).save(any(Message.class));
+	}
+
+	@Test
+	void powinienRzucacBladGdyBrakOdbiorcyPoNazwie() {
+		User nadawca = utworzUzytkownika(1L, "nadawca");
+		when(repozytoriumUzytkownikow.znajdzPoNazwieUzytkownika("missing"))
+				.thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> serwisWiadomosci.wyslijWiadomosc("missing", "Test", nadawca, null))
+				.isInstanceOf(ResourceNotFoundException.class);
+
+		verifyNoInteractions(repozytoriumWiadomosci);
+	}
+
+	@Test
+	void powinienRzucacBladGdyPowiazanyPostNieIstnieje() {
+		User nadawca = utworzUzytkownika(1L, "nadawca");
+		User odbiorca = utworzUzytkownika(2L, "odbiorca");
+		when(repozytoriumUzytkownikow.findById(2L)).thenReturn(Optional.of(odbiorca));
+		when(repozytoriumPostow.findById(77L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> serwisWiadomosci.wyslijWiadomosc(2L, "Test", nadawca, 77L))
+				.isInstanceOf(ResourceNotFoundException.class);
+
+		verify(repozytoriumWiadomosci, never()).save(any(Message.class));
 	}
 
 	private User utworzUzytkownika(Long id, String nazwa) {

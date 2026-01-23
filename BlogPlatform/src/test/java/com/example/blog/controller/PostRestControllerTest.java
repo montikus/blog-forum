@@ -1,7 +1,9 @@
 package com.example.blog.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -91,6 +93,47 @@ class PostRestControllerTest {
 				.andExpect(status().isCreated())
 				.andExpect(header().exists("Location"))
 				.andExpect(jsonPath("$.tytul").value("Nowy post"));
+	}
+
+	@Test
+	@WithMockUser(username = "autor_update")
+	void powinienAktualizowacPost() throws Exception {
+		User autor = utworzUzytkownika("autor_update", "autor_update@example.com");
+		Post post = utworzPost("Stary tytul", "Stara tresc", autor);
+		String tresc = """
+				{
+				  "tytul": "Nowy tytul",
+				  "tresc": "Nowa tresc",
+				  "wspolautorzyId": []
+				}
+				""";
+
+		mockMvc.perform(put("/api/v1/posts/{idPosta}", post.getId())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(tresc.getBytes(StandardCharsets.UTF_8)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.tytul").value("Nowy tytul"));
+	}
+
+	@Test
+	@WithMockUser(username = "autor_delete")
+	void powinienUsuwacPost() throws Exception {
+		User autor = utworzUzytkownika("autor_delete", "autor_delete@example.com");
+		Post post = utworzPost("Do usuniecia", "Tresc", autor);
+
+		mockMvc.perform(delete("/api/v1/posts/{idPosta}", post.getId()))
+				.andExpect(status().isNoContent());
+	}
+
+	@Test
+	void powinienWyszukacPosty() throws Exception {
+		User autor = utworzUzytkownika("search_author", "search_author@example.com");
+		utworzPost("Searchable title", "Other content", autor);
+
+		mockMvc.perform(get("/api/v1/posts/search")
+						.param("query", "Searchable"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[0].tytul").value("Searchable title"));
 	}
 
 	private User utworzUzytkownika(String nazwa, String email) {

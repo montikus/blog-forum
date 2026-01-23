@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.example.blog.dto.CommentDto;
 import com.example.blog.exception.ForbiddenException;
+import com.example.blog.exception.ResourceNotFoundException;
 import com.example.blog.mapper.CommentMapper;
 import com.example.blog.model.Comment;
 import com.example.blog.model.Post;
@@ -105,6 +106,28 @@ class CommentServiceTest {
 
 		assertThat(wynik).hasSize(1);
 		assertThat(wynik.getFirst().getId()).isEqualTo(3L);
+	}
+
+	@Test
+	void powinienPozwalacUsunacKomentarzAutorowi() {
+		User autor = utworzUzytkownika(1L, Role.USER);
+		Comment komentarz = new Comment();
+		komentarz.setId(4L);
+		komentarz.setAutor(autor);
+		when(repozytoriumKomentarzy.findById(4L)).thenReturn(Optional.of(komentarz));
+
+		serwisKomentarzy.usunKomentarz(4L, autor);
+
+		verify(repozytoriumKomentarzy).delete(komentarz);
+	}
+
+	@Test
+	void powinienRzucicBladGdyPostNieIstniejePrzyDodawaniu() {
+		User autor = utworzUzytkownika(1L, Role.USER);
+		when(repozytoriumPostow.findById(99L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> serwisKomentarzy.dodajKomentarz(99L, "Test", autor))
+				.isInstanceOf(ResourceNotFoundException.class);
 	}
 
 	private User utworzUzytkownika(Long id, Role rola) {

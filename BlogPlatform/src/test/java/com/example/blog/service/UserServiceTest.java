@@ -58,6 +58,46 @@ class UserServiceTest {
 		assertThat(dto.getNazwaUzytkownika()).isEqualTo("ola_test");
 	}
 
+	@Test
+	void powinienPobracUzytkownikaPoId() {
+		User uzytkownik = utworzUzytkownika(6L, "jan");
+		when(repozytoriumUzytkownikow.findById(6L)).thenReturn(Optional.of(uzytkownik));
+
+		User wynik = serwisUzytkownikow.pobierzUzytkownika(6L);
+
+		assertThat(wynik.getNazwaUzytkownika()).isEqualTo("jan");
+	}
+
+	@Test
+	void powinienZwrocicNullGdyMapujNaDtoDlaNull() {
+		UserDto dto = serwisUzytkownikow.mapujNaDto(null);
+
+		assertThat(dto).isNull();
+	}
+
+	@Test
+	void powinienPobracWszystkichUzytkownikow() {
+		User uzytkownik = utworzUzytkownika(4L, "anna");
+		when(repozytoriumUzytkownikow.findAll()).thenReturn(java.util.List.of(uzytkownik));
+
+		java.util.List<UserDto> wynik = serwisUzytkownikow.pobierzWszystkich();
+
+		assertThat(wynik).hasSize(1);
+		assertThat(wynik.getFirst().getNazwaUzytkownika()).isEqualTo("anna");
+	}
+
+	@Test
+	void powinienSprawdzacIstnienieNazwyIEmail() {
+		when(repozytoriumUzytkownikow.istniejePoNazwieUzytkownika("user1")).thenReturn(true);
+		when(repozytoriumUzytkownikow.istniejePoAdresieEmail("user1@example.com")).thenReturn(false);
+
+		boolean nazwaIstnieje = serwisUzytkownikow.czyIstniejeNazwaUzytkownika("user1");
+		boolean emailIstnieje = serwisUzytkownikow.czyIstniejeAdresEmail("user1@example.com");
+
+		assertThat(nazwaIstnieje).isTrue();
+		assertThat(emailIstnieje).isFalse();
+	}
+
 	private User utworzUzytkownika(Long id, String nazwa) {
 		User uzytkownik = new User();
 		uzytkownik.setId(id);

@@ -161,6 +161,58 @@ class PostServiceTest {
 		assertThat(wynik.getContent()).hasSize(1);
 	}
 
+	@Test
+	void powinienZwracacFormularzDoEdycji() {
+		User autor = utworzUzytkownika(1L, Role.USER);
+		User wspolautor = utworzUzytkownika(2L, Role.USER);
+		Post post = utworzPost(40L, autor);
+		post.getAutorzy().add(wspolautor);
+		when(repozytoriumPostow.findById(40L)).thenReturn(Optional.of(post));
+
+		PostFormDto formularz = serwisPostow.pobierzFormularzDoEdycji(40L, autor);
+
+		assertThat(formularz.getTytul()).isEqualTo(post.getTytul());
+		assertThat(formularz.getTresc()).isEqualTo(post.getTresc());
+		assertThat(formularz.getWspolautorzyId()).containsExactlyInAnyOrder(1L, 2L);
+	}
+
+	@Test
+	void powinienUstawiacWspolautorowGdyListaNiepusta() {
+		User autor = utworzUzytkownika(1L, Role.USER);
+		User wspolautor = utworzUzytkownika(2L, Role.USER);
+		Post post = utworzPost(50L, autor);
+		when(repozytoriumPostow.findById(50L)).thenReturn(Optional.of(post));
+		when(repozytoriumUzytkownikow.findAllById(List.of(2L))).thenReturn(List.of(wspolautor));
+
+		serwisPostow.ustawWspolautorow(50L, List.of(2L), autor);
+
+		assertThat(post.getAutorzy()).containsExactly(wspolautor);
+	}
+
+	@Test
+	void powinienMapowacPostBezKomentarzyGdyNull() {
+		User autor = utworzUzytkownika(1L, Role.USER);
+		Post post = utworzPost(60L, autor);
+		post.setKomentarze(null);
+		PostDto dto = new PostDto();
+		dto.setId(60L);
+		when(repozytoriumPostow.findById(60L)).thenReturn(Optional.of(post));
+		when(repozytoriumOcen.pobierzSredniaDlaPosta(60L)).thenReturn(1.0);
+		when(mapperPostow.mapujNaDto(post, 1.0, 0)).thenReturn(dto);
+
+		PostDto wynik = serwisPostow.pobierzPost(60L);
+
+		assertThat(wynik.getId()).isEqualTo(60L);
+	}
+
+	@Test
+	void powinienRzucicBladGdyPostNieIstnieje() {
+		when(repozytoriumPostow.findById(99L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> serwisPostow.pobierzPost(99L))
+				.isInstanceOf(ResourceNotFoundException.class);
+	}
+
 	private User utworzUzytkownika(Long id, Role rola) {
 		User uzytkownik = new User();
 		uzytkownik.setId(id);

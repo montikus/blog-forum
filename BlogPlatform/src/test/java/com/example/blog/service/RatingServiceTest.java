@@ -3,10 +3,13 @@ package com.example.blog.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.example.blog.dto.RatingDto;
+import com.example.blog.exception.ResourceNotFoundException;
 import com.example.blog.model.Post;
 import com.example.blog.model.Rating;
 import com.example.blog.model.Role;
@@ -99,6 +102,28 @@ class RatingServiceTest {
 
 		assertThatThrownBy(() -> serwisOcen.pobierzSrednia(99L))
 				.isInstanceOf(com.example.blog.exception.ResourceNotFoundException.class);
+	}
+
+	@Test
+	void powinienRzucicBladGdyPostNieIstniejePrzyOcenie() {
+		User uzytkownik = utworzUzytkownika(3L);
+		when(repozytoriumPostow.findById(44L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> serwisOcen.ocenPost(44L, 3, uzytkownik))
+				.isInstanceOf(ResourceNotFoundException.class);
+
+		verify(repozytoriumOcen, never()).save(any(Rating.class));
+	}
+
+	@Test
+	void powinienZwrocicSredniaGdyPostIstnieje() {
+		when(repozytoriumPostow.existsById(12L)).thenReturn(true);
+		when(repozytoriumOcen.pobierzSredniaDlaPosta(12L)).thenReturn(2.75);
+
+		double wynik = serwisOcen.pobierzSrednia(12L);
+
+		assertThat(wynik).isEqualTo(2.75);
+		verify(repozytoriumOcen).pobierzSredniaDlaPosta(12L);
 	}
 
 	private User utworzUzytkownika(Long id) {
